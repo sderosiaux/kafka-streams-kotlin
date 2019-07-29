@@ -1,14 +1,13 @@
 package com.ixonad
 
+import com.ixonad.GamePriceProducer.produceRandomGamePrice
 import com.ixonad.JsonSerde.makeJsonSerde
-import org.apache.kafka.clients.admin.AdminClient
-import org.apache.kafka.clients.admin.AdminClientConfig
-import org.apache.kafka.clients.admin.NewTopic
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerConfig
-import org.apache.kafka.clients.producer.ProducerRecord
+import com.ixonad.KafkaConfig.BOOTSTRAP_SERVERS
+import com.ixonad.KafkaConfig.STORE
+import com.ixonad.KafkaConfig.TOPIC_INPUT
+import com.ixonad.KafkaConfig.TOPIC_OUTPUT
+import com.ixonad.KafkaConfig.createTopicsIfNecessary
 import org.apache.kafka.common.serialization.Serdes
-import org.apache.kafka.common.serialization.StringSerializer
 import org.apache.kafka.streams.*
 import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.Produced
@@ -19,7 +18,6 @@ import org.apache.kafka.streams.processor.WallclockTimestampExtractor
 import org.apache.kafka.streams.state.KeyValueStore
 import org.apache.kafka.streams.state.Stores
 import java.util.*
-import kotlin.random.Random
 
 
 typealias GameId = String
@@ -28,54 +26,21 @@ typealias Price = Double
 data class GamePrice(val gameId: GameId, val price: Price)
 
 object ChangedPricesStream {
-    private const val BOOTSTRAP_SERVERS = "localhost:9092"
-
-    const val TOPIC_INPUT = "prices"
-    const val TOPIC_OUTPUT = "prices-updated"
-    const val STORE = "toto"
 
     @JvmStatic
     fun main(args: Array<String>) {
         createTopicsIfNecessary()
+        produceRandomGamePrice()
 
-        // thread to produce random game price to make the streams work
-        Thread { produceRandomGamePrice() }.start()
-
-        val props = Properties().apply {
+        val streams = KafkaStreams(buildTopology(StreamsBuilder()), Properties().apply {
             put(StreamsConfig.APPLICATION_ID_CONFIG, "changed-prices")
             put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS)
-        }
-        val streams = KafkaStreams(buildTopology(StreamsBuilder()), props)
+        })
 
         streams.cleanUp()
         streams.start()
 
         Runtime.getRuntime().addShutdownHook(Thread(streams::close))
-    }
-
-    private fun produceRandomGamePrice() {
-        val p = KafkaProducer<String, GamePrice>(Properties().apply {
-            put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS)
-            put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer::class.java)
-            put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, GamePriceSerializer::class.java)
-        })
-
-        while (true) {
-            val gp = GamePrice("game_${Random.nextInt(200)}", Random.nextDouble(100.0))
-            p.send(ProducerRecord(TOPIC_INPUT, gp.gameId, gp)).get()
-            Thread.sleep(1000)
-        }
-    }
-
-    private fun createTopicsIfNecessary() {
-        val admin = AdminClient.create(Properties().apply {
-            put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS)
-        })
-        val topics = admin.listTopics().names().get()
-        val ourTopics = listOf(TOPIC_INPUT, TOPIC_OUTPUT)
-        if (!topics.containsAll(ourTopics)) {
-            admin.createTopics(ourTopics.map { NewTopic(it, 3, 1) }).all().get()
-        }
     }
 
     // visible for testing
