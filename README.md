@@ -11,4 +11,4 @@ The program:
 
 If you look in [Conduktor](https://conduktor.io), you will see 3 topics with data:
 
-![Conduktor](conduktor.png)
+![Conduktor](conduktorr.png)
