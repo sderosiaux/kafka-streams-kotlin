@@ -8,3 +8,7 @@ The program:
 - Rely on `localhost:9092`
 - creates the necessary topics (in and out) if necessary (using the `AdminClient`)
 - produce random data in the input topic every seconds
+
+If you look in [Conduktor](https://conduktor.io), you will see 3 topics with data:
+
+![Conduktor](conduktor.png)
