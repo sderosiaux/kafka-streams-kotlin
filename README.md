@@ -1,0 +1,10 @@
+Sample Kafka Streams in Kotlin using:
+
+- Json Serde using Kotlin `reified` 
+- A `Topology` with a `Transformer`, and a state, to prevent sending duplicate downstream
+- JUnit 5 tests using `TopologyTestDriver`
+ 
+The program:
+- Rely on `localhost:9092`
+- creates the necessary topics (in and out) if necessary (using the `AdminClient`)
+- produce random data in the input topic every seconds
