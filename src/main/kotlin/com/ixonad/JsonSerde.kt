@@ -17,5 +17,11 @@ object JsonSerde {
                 Serializer { _, data -> mapper.writeValueAsBytes(data) }
         }
     }
+}
+
+// Stupid crap for the Producer (it needs a reference because it does reflection)
+class GamePriceSerializer: Serializer<GamePrice> {
+    private val ser = JsonSerde.makeJsonSerde<GamePrice>().serializer()
+    override fun serialize(topic: String?, data: GamePrice?): ByteArray = ser.serialize(topic, data)
 
 }
