@@ -1,9 +1,9 @@
 package com.ixonad
 
 import com.ixonad.JsonSerde.makeJsonSerde
-import com.ixonad.LowestPriceStream.TOPIC_INPUT
-import com.ixonad.LowestPriceStream.TOPIC_OUTPUT
-import com.ixonad.LowestPriceStream.buildTopology
+import com.ixonad.ChangedPricesStream.TOPIC_INPUT
+import com.ixonad.ChangedPricesStream.TOPIC_OUTPUT
+import com.ixonad.ChangedPricesStream.buildTopology
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
@@ -20,7 +20,7 @@ import org.junit.jupiter.api.TestInstance
 import java.util.*
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class LowestPriceStreamTest {
+class ChangedPricesStreamTest {
 
     private lateinit var factory: ConsumerRecordFactory<String, GamePrice>
     private lateinit var tdd: TopologyTestDriver
@@ -30,7 +30,7 @@ class LowestPriceStreamTest {
     @BeforeAll
     fun init() {
         val props = Properties().apply {
-            put(StreamsConfig.APPLICATION_ID_CONFIG, "lowest-price-test")
+            put(StreamsConfig.APPLICATION_ID_CONFIG, "changed-prices-test")
             put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "whocares:9092")
         }
         tdd = TopologyTestDriver(buildTopology(StreamsBuilder()), props)
@@ -41,7 +41,7 @@ class LowestPriceStreamTest {
     fun teardown() = tdd.close()
 
     @Test
-    fun `Compute lowest price`() {
+    fun `Send new prices only`() {
         // Given a gamePrice
         val gp = GamePrice("prd_123", 10.42)
         // When we send it
@@ -56,13 +56,15 @@ class LowestPriceStreamTest {
         // Then we don't get anything
         assertNull(readOutput())
 
-        // When we send a different price
+        // When we send a different price twice
         val gpWithNewPrice = gp.copy(price = 1337.0)
         sendGamePrice(gpWithNewPrice)
-        // Then we get the new price in output
+        sendGamePrice(gpWithNewPrice)
+        // Then we get the new price only once in output
         with(readOutput()!!) {
             assertKVEquals(gpWithNewPrice)
         }
+        assertNull(readOutput())
     }
 
     private fun ProducerRecord<String, GamePrice>.assertKVEquals(gp: GamePrice) {

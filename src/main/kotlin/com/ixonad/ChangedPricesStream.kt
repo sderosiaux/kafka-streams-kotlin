@@ -19,7 +19,7 @@ typealias Price = Double
 
 data class GamePrice(val gameId: GameId, val price: Price)
 
-object LowestPriceStream {
+object ChangedPricesStream {
     const val TOPIC_INPUT = "prices"
     const val TOPIC_OUTPUT = "prices-updated"
     const val STORE = "toto"
@@ -27,7 +27,7 @@ object LowestPriceStream {
     @JvmStatic
     fun main(args: Array<String>) {
         val props = Properties().apply {
-            put(StreamsConfig.APPLICATION_ID_CONFIG, "lowest-price")
+            put(StreamsConfig.APPLICATION_ID_CONFIG, "changed-prices")
             put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
         }
         val streams = KafkaStreams(buildTopology(StreamsBuilder()), props)
