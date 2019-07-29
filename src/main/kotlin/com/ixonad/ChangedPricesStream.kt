@@ -59,7 +59,7 @@ object ChangedPricesStream {
         // make a state to keep our price we're going to compare to
         sb.addStateStore(
             Stores.keyValueStoreBuilder(
-                Stores.inMemoryKeyValueStore(STORE),
+                Stores.persistentKeyValueStore(STORE),
                 Serdes.StringSerde(),
                 Serdes.DoubleSerde()
             )
