@@ -6,6 +6,7 @@ import com.ixonad.KafkaConfig.BOOTSTRAP_SERVERS
 import com.ixonad.KafkaConfig.STORE
 import com.ixonad.KafkaConfig.TOPIC_INPUT
 import com.ixonad.KafkaConfig.TOPIC_OUTPUT
+import com.ixonad.KafkaConfig.addConfluentCloudConfig
 import com.ixonad.KafkaConfig.createTopicsIfNecessary
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.*
@@ -35,6 +36,7 @@ object ChangedPricesStream {
         val streams = KafkaStreams(buildTopology(StreamsBuilder()), Properties().apply {
             put(StreamsConfig.APPLICATION_ID_CONFIG, "changed-prices")
             put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS)
+            addConfluentCloudConfig()
         })
 
         streams.cleanUp()

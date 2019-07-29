@@ -2,6 +2,7 @@ package com.ixonad
 
 import com.ixonad.KafkaConfig.BOOTSTRAP_SERVERS
 import com.ixonad.KafkaConfig.TOPIC_INPUT
+import com.ixonad.KafkaConfig.addConfluentCloudConfig
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -18,6 +19,7 @@ object GamePriceProducer {
                 put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS)
                 put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer::class.java)
                 put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, GamePriceSerializer::class.java)
+                addConfluentCloudConfig()
             })
 
             while (true) {
