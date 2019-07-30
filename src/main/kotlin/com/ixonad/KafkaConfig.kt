@@ -9,9 +9,12 @@ import java.util.*
 
 object KafkaConfig {
     const val BOOTSTRAP_SERVERS = "localhost:9092" // XXX.europe-west1.gcp.confluent.cloud:9092"
+    const val SCHEMA_REGISTRY_URL = "http://localhost:8081"
     const val TOPIC_INPUT = "prices"
     const val TOPIC_OUTPUT = "prices-updated"
-    const val STORE = "toto"
+    const val TOPIC_INPUT_AVRO = "prices-avro"
+    const val TOPIC_OUTPUT_AVRO = "prices-updated-avro"
+    const val STORE = "last-prices-store"
 
     fun createTopicsIfNecessary() {
         val admin = AdminClient.create(Properties().apply {
@@ -19,9 +22,10 @@ object KafkaConfig {
             addConfluentCloudConfig()
         })
         val topics = admin.listTopics().names().get()
-        val ourTopics = listOf(TOPIC_INPUT, TOPIC_OUTPUT)
-        if (!topics.containsAll(ourTopics)) {
-            admin.createTopics(ourTopics.map { NewTopic(it, 3, 3) }).all().get()
+        val ourTopics = listOf(TOPIC_INPUT, TOPIC_OUTPUT, TOPIC_INPUT_AVRO, TOPIC_OUTPUT_AVRO)
+        val needCreation = (ourTopics - topics)
+        if (needCreation.isNotEmpty()) {
+            admin.createTopics(needCreation.map { NewTopic(it, 3, 1) }).all().get()
         }
     }
 

@@ -1,9 +1,10 @@
 package com.ixonad
 
-import com.ixonad.JsonSerde.makeJsonSerde
-import com.ixonad.ChangedPricesStream.TOPIC_INPUT
-import com.ixonad.ChangedPricesStream.TOPIC_OUTPUT
+import com.ixonad.json.JsonSerde.makeJsonSerde
 import com.ixonad.ChangedPricesStream.buildTopology
+import com.ixonad.KafkaConfig.TOPIC_INPUT
+import com.ixonad.KafkaConfig.TOPIC_OUTPUT
+import com.ixonad.model.GamePrice
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer

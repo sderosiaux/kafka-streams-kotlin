@@ -1,0 +1,9 @@
+{
+  "type": "record",
+  "namespace": "com.ixonad.avro",
+  "name": "GamePriceAvro",
+  "fields" : [
+    {"name": "game_id", "type": "string"},
+    {"name": "price", "type": "double"}
+  ]
+}

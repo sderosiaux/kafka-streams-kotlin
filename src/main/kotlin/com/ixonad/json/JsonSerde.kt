@@ -1,6 +1,7 @@
-package com.ixonad
+package com.ixonad.json
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.ixonad.model.GamePrice
 import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serializer
