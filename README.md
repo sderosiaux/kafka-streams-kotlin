@@ -1,6 +1,7 @@
 Sample Kafka Streams in Kotlin using:
 
 - Json Serde using Kotlin `reified` 
+- There is a Avro version of the Kafka Streams too
 - A `Topology` with a `Transformer`, and a state, to prevent sending duplicate downstream
 - JUnit 5 tests using `TopologyTestDriver`
  
