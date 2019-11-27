@@ -53,6 +53,7 @@ object OneTopicTwoSubjects {
         while (true) {
             val records = c.poll(Duration.ofMillis(1000))
             records.forEach { r: ConsumerRecord<String, SpecificRecord> ->
+                // we can use the value itself...
                 val x: String = when (val v = r.value()) {
                     is GameCreated -> "created ${v.gameId} with ${v.getPlayers()} players"
                     is GameDeleted -> "deleted ${v.gameId} at ${LocalDateTime.ofEpochSecond(
@@ -60,7 +61,13 @@ object OneTopicTwoSubjects {
                     )}"
                     else -> "not handled"
                 }
-                println(x)
+                // or use the headers, less practical due to casts
+                val y: String = when (String(r.headers().lastHeader("event-type")?.value() ?: ByteArray(0))) {
+                    "created" -> "HEADER created ${(r.value() as GameCreated).gameId}"
+                    "deleted" -> "HEADER deleted ${(r.value() as GameDeleted).gameId}"
+                    else -> "HEADER not handled"
+                }
+                println(y)
             }
         }
     }
@@ -82,8 +89,10 @@ object OneTopicTwoSubjects {
                 val gameId = Random.nextInt(200).toString()
                 val created = GameCreated("game_${gameId}", Random.nextInt(20))
                 val deleted = GameDeleted("game_${gameId}", System.currentTimeMillis())
-                p.send(ProducerRecord(TOPIC, gameId, created))
-                p.send(ProducerRecord(TOPIC, gameId, deleted))
+                val produceCreated: ProducerRecord<String, SpecificRecord> = ProducerRecord(TOPIC, gameId, created)
+                val produceDeleted: ProducerRecord<String, SpecificRecord> = ProducerRecord(TOPIC, gameId, deleted)
+                p.send(produceCreated.apply { headers().add("event-type", "created".toByteArray()) })
+                p.send(produceDeleted.apply { headers().add("event-type", "deleted".toByteArray()) })
                 Thread.sleep(1000)
             }
         }.start()
