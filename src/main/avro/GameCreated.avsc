@@ -1,0 +1,9 @@
+{
+  "type": "record",
+  "namespace": "com.ixonad.avro",
+  "name": "GameCreated",
+  "fields" : [
+    {"name": "game_id", "type": "string"},
+    {"name": "players", "type": "int" }
+  ]
+}

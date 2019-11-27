@@ -1,0 +1,9 @@
+{
+  "type": "record",
+  "namespace": "com.ixonad.avro",
+  "name": "GameDeleted",
+  "fields" : [
+    {"name": "game_id", "type": "string"},
+    {"name": "when", "type": "long", "logicalType": "timestamp-millis" }
+  ]
+}

@@ -1,15 +1,27 @@
 package com.ixonad
 
+import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.admin.AdminClient
 import org.apache.kafka.clients.admin.AdminClientConfig
 import org.apache.kafka.clients.admin.NewTopic
+import org.apache.kafka.common.config.SaslConfigs
+import org.apache.kafka.common.config.SslConfigs
 import org.apache.kafka.streams.StreamsConfig
 import java.util.*
 
 object KafkaConfig {
-    const val BOOTSTRAP_SERVERS = "localhost:9092" // XXX.europe-west1.gcp.confluent.cloud:9092"
-    const val SCHEMA_REGISTRY_URL = "http://localhost:8081"
+    val p: Properties
+        get() {
+            val p = Properties()
+            p.load(javaClass.getResourceAsStream("/credentials.conf"))
+            return p
+        }
+
+    val BOOTSTRAP_SERVERS get() = p[AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG]
+    val SCHEMA_REGISTRY_URL get() = p[AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG]
+    val SCHEMA_REGISTRY_USER_INFO_CONFIG get() = p[AbstractKafkaAvroSerDeConfig.USER_INFO_CONFIG]
+
     const val TOPIC_INPUT = "prices"
     const val TOPIC_OUTPUT = "prices-updated"
     const val TOPIC_INPUT_AVRO = "prices-avro"
@@ -32,14 +44,11 @@ object KafkaConfig {
     fun Properties.addConfluentCloudConfig() {
         if (this[CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG].toString().contains("confluent.cloud")) {
             put(StreamsConfig.REPLICATION_FACTOR_CONFIG, 3)
-            put("ssl.endpoint.identification.algorithm", "https")
-            put("sasl.mechanism", "PLAIN")
-            put("request.timeout.ms", "20000")
-            put(
-                "sasl.jaas.config",
-                "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"<USERNAME>\" password=\"<PASSWORD>\";"
-            )
-            put("security.protocol", "SASL_SSL")
+            put(SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG, "https")
+            put(SaslConfigs.SASL_MECHANISM, "PLAIN")
+            put(CommonClientConfigs.REQUEST_TIMEOUT_MS_CONFIG, "20000")
+            put(SaslConfigs.SASL_JAAS_CONFIG, p.get(SaslConfigs.SASL_JAAS_CONFIG))
+            put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_SSL")
         }
     }
 }
